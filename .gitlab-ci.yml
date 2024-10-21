@@ -1,0 +1,36 @@
+# Define the stages of the pipeline
+stages:
+  - build
+  - push
+
+# Docker build stage
+build-image:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind  # Docker-in-Docker service required to build images
+  variables:
+    DOCKER_DRIVER: overlay2  # Specify the Docker storage driver
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"  # Login to GitLab Container Registry
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .  # Build the Docker image with the current commit slug as the tag
+  only:
+    - main  # Only run this job on the main branch
+  tags:
+    - docker  # Optional: Define tags to specify runners with Docker capabilities
+
+# Docker push stage
+push-image:
+  stage: push
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"  # Push the image to the GitLab registry
+  only:
+    - main
+  tags:
+    - docker
