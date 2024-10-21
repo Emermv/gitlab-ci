@@ -1,6 +1,7 @@
 # Define the stages of the pipeline
 stages:
   - build
+  - notify
   - push
 
 # Docker build stage
@@ -11,7 +12,7 @@ build-image:
     - docker:dind  # Docker-in-Docker service required to build images
   variables:
     DOCKER_DRIVER: overlay2  # Specify the Docker storage driver
-    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"  # Login to GitLab Container Registry
   script:
@@ -21,7 +22,31 @@ build-image:
     - main  # Only run this job on the main branch
   # tags:
   #   - docker  # Optional: Define tags to specify runners with Docker capabilities
+send-notification:
+  stage: notify
+  image: curlimages/curl:latest  # Use a lightweight curl image
+  variables:
+    BOT_TOKEN: ${CI_SECRET_BOT_TOKEN}  # Define your secret token in GitLab CI/CD settings
+    TELEGRAM_CHAT_ID: "-1001929173409"  # Your Telegram chat ID
+    COMMIT_MESSAGE: $CI_COMMIT_MESSAGE  # Get the commit message
+  script:
+    - |
+      if [ "$CI_JOB_STATUS" == "success" ]; then
+        STATUS="SUCCESSFUL"
+      else
+        STATUS="FAILED"
+      fi
 
+      MESSAGE="Deployment of '$CI_PROJECT_NAME' with commit '$CI_COMMIT_SHORT_SHA' was: $STATUS"
+      
+      curl -X POST \
+        https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
+        -H 'Content-Type: application/json' \
+        -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"$MESSAGE\"}"
+  only:
+    - main  # Only run this job on the main branch
+  needs:
+    - build-image  # Ensure this stage depends on the previous one
 # Docker push stage
 # push-image:
 #   stage: push
