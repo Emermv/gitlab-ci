@@ -18,6 +18,11 @@ build-image:
   script:
     - docker build -t $IMAGE_TAG .  # Build the Docker image with the current commit slug as the tag
     - docker push $IMAGE_TAG
+  after_script:
+    - echo $CI_JOB_STATUS > build_status.txt  # Save the build status to a file for later stages
+  artifacts:
+    paths:
+      - build_status.txt  # Store the file as an artifact for use in later stages    
   only:
     - main  # Only run this job on the main branch
   # tags:
@@ -30,19 +35,22 @@ send-notification:
     TELEGRAM_CHAT_ID: "-1001929173409"  # Your Telegram chat ID
     COMMIT_MESSAGE: $CI_COMMIT_MESSAGE  # Get the commit message
   script:
+    - BUILD_STATUS=$(cat build_status.txt)  # Read the build status from the artifact  
     - |
-      if [ "$CI_JOB_STATUS" == "success" ]; then
+      if [ "$BUILD_STATUS" == "success" ]; then
         STATUS="SUCCESSFUL"
       else
         STATUS="FAILED"
       fi
 
-      MESSAGE="Deployment of '$CI_PROJECT_NAME' with commit '$CI_COMMIT_SHORT_SHA' was: $STATUS"
+      MESSAGE="Deployment of '$CI_PROJECT_NAME' with commit '$COMMIT_MESSAGE' was: $STATUS"
       
       curl -X POST \
         https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
         -H 'Content-Type: application/json' \
         -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"$MESSAGE\"}"
+  # artifacts:
+  #   when: on_failure  # Only send notification if build or push stage fails        
   only:
     - main  # Only run this job on the main branch
   needs:
