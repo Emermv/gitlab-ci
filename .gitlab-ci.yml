@@ -17,8 +17,8 @@ build-image:
     - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .  # Build the Docker image with the current commit slug as the tag
   only:
     - main  # Only run this job on the main branch
-  tags:
-    - docker  # Optional: Define tags to specify runners with Docker capabilities
+  # tags:
+  #   - docker  # Optional: Define tags to specify runners with Docker capabilities
 
 # Docker push stage
 push-image:
@@ -32,5 +32,5 @@ push-image:
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"  # Push the image to the GitLab registry
   only:
     - main
-  tags:
-    - docker
+  # tags:
+  #   - docker
