@@ -23,6 +23,28 @@ test:
   only:
     - main
 
+push-to-ecr:
+  stage: push
+  image: amazonlinux:2  # Use Amazon Linux to ensure compatibility with AWS CLI and Docker
+  services:
+    - docker:dind
+  variables:
+    AWS_REGION: "us-east-1"
+    ECR_REGISTRY: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"  # ECR Registry URL
+    ECR_REPOSITORY: "${AWS_ECR_REPOSITORY}"
+    IMAGE_TAG: "${ECR_REGISTRY}/${ECR_REPOSITORY}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}"
+  before_script:
+    - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"  # Download AWS CLI
+    - unzip awscliv2.zip
+    - ./aws/install  # Install AWS CLI
+    - $(aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY)  # Log in to ECR
+  script:
+    - docker build -t $IMAGE_TAG .  # Build the Docker image
+    - docker push $IMAGE_TAG  # Push the image to ECR
+  only:
+    - main
+  needs:
+    - test
 # Docker build stage
 build-image:
   stage: build
@@ -76,17 +98,3 @@ send-notification:
     - main  # Only run this job on the main branch
   needs:
     - build-image  # Ensure this stage depends on the previous one
-# Docker push stage
-# push-image:
-#   stage: push
-#   image: docker:latest
-#   services:
-#     - docker:dind
-#   before_script:
-#     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-#   script:
-#     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"  # Push the image to the GitLab registry
-#   only:
-#     - main
-  # tags:
-  #   - docker
