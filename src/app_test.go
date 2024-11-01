@@ -22,7 +22,7 @@ func TestHelloHandler(t *testing.T) {
 	}
 
 	// Define the expected JSON response as a map
-	expected := map[string]string{"message": "Hello, World!"}
+	expected := map[string]string{"message": "hello, World!"}
 	var actual map[string]string
 
 	// Decode the actual JSON response

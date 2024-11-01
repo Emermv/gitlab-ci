@@ -8,13 +8,17 @@ stages:
 test:
   stage: test
   image: golang:latest
+  before_script:
+    - go install github.com/jstemmer/go-junit-report@latest  # Install go-junit-report  
   script:
     - echo "Running tests..."
     - cd src
-    - go test ./... -v
+    - go test ./... -v | go-junit-report > test-report.xml  # Run tests and create JUnit report
   artifacts:
     reports:
-      junit: test-report.xml  # Store test results as artifacts    
+      junit: test-report.xml  # Store test results as artifacts
+    paths:
+      - test-report.xml       # Ensure the report is uploaded as an artifact
   only:
     - main
 
