@@ -1,8 +1,8 @@
 # Define the stages of the pipeline
 stages:
-  # - test
-  # - build
-  # - notify
+  - test
+  - build
+  - notify
   - push
 # Test stage
 test:
@@ -21,7 +21,7 @@ test:
     paths:
       - test-report.xml       # Ensure the report is uploaded as an artifact
   only:
-    - main
+    - master
 
 push-to-ecr:
   stage: push
@@ -71,7 +71,7 @@ build-image:
     paths:
       - build_status.txt  # Store the file as an artifact for use in later stages    
   only:
-    - main  # Only run this job on the main branch
+    - master  # Only run this job on the main branch
   # tags:
   #   - docker  # Optional: Define tags to specify runners with Docker capabilities
 send-notification:
@@ -99,6 +99,6 @@ send-notification:
   # artifacts:
   #   when: on_failure  # Only send notification if build or push stage fails        
   only:
-    - main  # Only run this job on the main branch
+    - master  # Only run this job on the main branch
   needs:
     - build-image  # Ensure this stage depends on the previous one
