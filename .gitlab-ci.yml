@@ -14,6 +14,7 @@ test:
     - echo "Running tests..."
     - cd src
     - go test ./... -v | go-junit-report > test-report.xml  # Run tests and create JUnit report
+    - mv test-report.xml ../test-report.xml  # Move the report to the root directory
   artifacts:
     reports:
       junit: test-report.xml  # Store test results as artifacts
