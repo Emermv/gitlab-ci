@@ -34,6 +34,7 @@ push-to-ecr:
     ECR_REPOSITORY: "${AWS_ECR_REPOSITORY}"
     IMAGE_TAG: "${ECR_REGISTRY}/${ECR_REPOSITORY}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}"
   before_script:
+    - yum install -y unzip  # Install unzip
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"  # Download AWS CLI
     - unzip awscliv2.zip
     - ./aws/install  # Install AWS CLI
