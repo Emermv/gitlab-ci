@@ -48,11 +48,7 @@ push-to-ecr-and-deploy:
   script:
     - docker build --platform linux/amd64 -t $IMAGE_TAG .  # Build the Docker image
     - docker push $IMAGE_TAG  # Push the image to ECR
-    - aws lambda create-function \
-      --function-name go-lambda \
-      --package-type Image \
-      --code ImageUri=$IMAGE_TAG \
-      --role arn:aws:iam::${AWS_ACCOUNT_ID}:role/go-lambda-ex
+    - aws lambda create-function --function-name go-lambda --package-type Image --code ImageUri=$IMAGE_TAG --role arn:aws:iam::${AWS_ACCOUNT_ID}:role/go-lambda-ex
   only:
     - main
   # needs:
