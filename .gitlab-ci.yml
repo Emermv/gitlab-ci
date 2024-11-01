@@ -25,7 +25,7 @@ test:
 
 push-to-ecr:
   stage: push
-  image: python:3.9-alpine
+  image: docker:latest
   services:
     - docker:dind
   variables:
@@ -34,8 +34,8 @@ push-to-ecr:
     ECR_REPOSITORY: "${AWS_ECR_REPOSITORY}"
     IMAGE_TAG: "${ECR_REGISTRY}/${ECR_REPOSITORY}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}"
   before_script:
-    - apk add --no-cache docker curl
-    - pip install awscli  # Install AWS CLI with pip
+    - apk add --no-cache curl python3 py3-pip
+    - pip3 install awscli  # Install AWS CLI with pip
     - aws --version  # Confirm installation
     - aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
     - aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
