@@ -35,12 +35,13 @@ push-to-ecr:
     IMAGE_TAG: "${ECR_REGISTRY}/${ECR_REPOSITORY}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}"
   before_script:
     - apk add --no-cache docker curl
-    - pip install awscli  # Install AWS CLI with pip for simplicity
+    - pip install awscli  # Install AWS CLI with pip
     - aws --version  # Confirm installation
     - aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
     - aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
     - aws configure set region "$AWS_REGION"
-    - $(aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY)  # Log in to ECR
+    # Login to ECR with a direct pipe
+    - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
   script:
     - docker build -t $IMAGE_TAG .  # Build the Docker image
     - docker push $IMAGE_TAG  # Push the image to ECR
