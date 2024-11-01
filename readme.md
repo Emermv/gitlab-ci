@@ -1,9 +1,6 @@
 # Build Image
 - docker build -t go .
 
-# Run Image 
-- docker run -p 80:80 go
-
 # Configure git and gitlab
 ### 0. **Create repository**
  First, create the repository and then the runners 

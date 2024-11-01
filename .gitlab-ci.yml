@@ -1,13 +1,29 @@
 # Define the stages of the pipeline
 stages:
+  - test
   - build
   - notify
   - push
+# Test stage
+test:
+  stage: test
+  image: golang:latest
+  script:
+    - echo "Running tests..."
+    - cd src
+    - go test ./... -v
+  artifacts:
+    reports:
+      junit: test-report.xml  # Store test results as artifacts    
+  only:
+    - main
 
 # Docker build stage
 build-image:
   stage: build
   image: docker:latest
+  needs:
+    - test
   services:
     - docker:dind  # Docker-in-Docker service required to build images
   variables:
