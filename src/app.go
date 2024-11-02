@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -56,15 +58,31 @@ func GoodbyeHandler() (events.APIGatewayProxyResponse, error) {
 
 // handler is the Lambda function entry point
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	fmt.Printf("Path:%s Method:%s \n", event.Path, event.HTTPMethod)
+
 	switch event.Path {
 	case "/hello":
 		return HelloHandler()
 	case "/goodbye":
 		return GoodbyeHandler()
 	default:
+		now := fmt.Sprintf("Time is %s", time.Now().Format(time.RFC3339))
+		metadata := map[string]string{
+			"now":    now,
+			"path":   event.Path,
+			"method": event.HTTPMethod,
+			"body":   event.Body,
+		}
+		jsonMetadata, err := json.Marshal(metadata)
+		if err != nil {
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusInternalServerError,
+				Body:       err.Error(),
+			}, err
+		}
 		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusNotFound,
-			Body:       "Not Found",
+			StatusCode: 200,
+			Body:       string(jsonMetadata),
 		}, nil
 	}
 }
