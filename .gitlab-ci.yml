@@ -22,7 +22,7 @@ test:
     paths:
       - test-report.xml       # Ensure the report is uploaded as an artifact
   only:
-    - master
+    - main
 
 push-to-ecr-and-deploy:
   stage: push-and-deploy
@@ -54,8 +54,8 @@ push-to-ecr-and-deploy:
     - aws lambda invoke --function-name $FUNCTION_NAME response.json    
   only:
     - main
-  # needs:
-    # - test
+  needs:
+    - test
 # Docker build stage
 build-image:
   stage: build
@@ -78,7 +78,7 @@ build-image:
     paths:
       - build_status.txt  # Store the file as an artifact for use in later stages    
   only:
-    - master  # Only run this job on the main branch
+    - main  # Only run this job on the main branch
   # tags:
   #   - docker  # Optional: Define tags to specify runners with Docker capabilities
 send-notification:
@@ -106,6 +106,6 @@ send-notification:
   # artifacts:
   #   when: on_failure  # Only send notification if build or push stage fails        
   only:
-    - master  # Only run this job on the main branch
+    - main  # Only run this job on the main branch
   needs:
     - build-image  # Ensure this stage depends on the previous one
