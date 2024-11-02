@@ -22,9 +22,18 @@ func HelloHandler(w http.ResponseWriter, r *http.Request) {
 
 // handler is our lambda handler invoked by the `lambda.Start` function
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	output := map[string]string{"message": "Hello, World!"}
+	jsonOutput, err := json.Marshal(output)
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       err.Error(),
+		}, err
+	}
 	response := events.APIGatewayProxyResponse{
 		StatusCode: 200,
-		Body:       "\"Hello from Lambda!\"",
+		Headers:    map[string]string{"Content-Type": "application/json"},
+		Body:       string(jsonOutput),
 	}
 	return response, nil
 }

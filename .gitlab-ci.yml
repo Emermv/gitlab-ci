@@ -32,7 +32,8 @@ push-to-ecr-and-deploy:
   variables:
     DOCKER_HOST: tcp://docker:2375  # Connect to the Docker daemon on TCP
     DOCKER_TLS_CERTDIR: ""  # Disable Docker TLS (required for dind)
-    IMAGE_NAME: "go"  
+    IMAGE_NAME: "go"
+    FUNCTION_NAME: "go-lambda"  
     AWS_REGION: "us-east-1"
     ECR_REGISTRY: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"  # ECR Registry URL
     ECR_REPOSITORY: "${AWS_ECR_REPOSITORY}"
@@ -48,7 +49,9 @@ push-to-ecr-and-deploy:
   script:
     - docker build --platform linux/amd64 -t $IMAGE_TAG .  # Build the Docker image
     - docker push $IMAGE_TAG  # Push the image to ECR
-    - aws lambda create-function --function-name go-lambda --package-type Image --code ImageUri=$IMAGE_TAG --role arn:aws:iam::${AWS_ACCOUNT_ID}:role/go-lambda-ex
+    # - aws lambda create-function --function-name $FUNCTION_NAME --package-type Image --code ImageUri=$IMAGE_TAG --role arn:aws:iam::${AWS_ACCOUNT_ID}:role/go-lambda-ex
+    - aws lambda update-function-code --function-name $FUNCTION_NAME -image-uri $IMAGE_TAG --publish
+    - aws lambda invoke --function-name $FUNCTION_NAME response.json    
   only:
     - main
   # needs:
