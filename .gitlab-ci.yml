@@ -50,7 +50,7 @@ push-to-ecr-and-deploy:
     - docker build --platform linux/amd64 -t $IMAGE_TAG .  # Build the Docker image
     - docker push $IMAGE_TAG  # Push the image to ECR
     # - aws lambda create-function --function-name $FUNCTION_NAME --package-type Image --code ImageUri=$IMAGE_TAG --role arn:aws:iam::${AWS_ACCOUNT_ID}:role/go-lambda-ex
-    - aws lambda update-function-code --function-name $FUNCTION_NAME -image-uri $IMAGE_TAG --publish
+    - aws lambda update-function-code --function-name $FUNCTION_NAME --image-uri $IMAGE_TAG --publish
     - aws lambda invoke --function-name $FUNCTION_NAME response.json    
   only:
     - main
